@@ -10,7 +10,7 @@ class ParentNode(HTMLNode):
         else:
           html_string = ""
           for child in self.children:
-            if(child.value == None and child.children  == None):
+            if(child.value == None and child.children == None):
                 raise ValueError("Child missing value")
             else:
                 html_string += child.to_html()
