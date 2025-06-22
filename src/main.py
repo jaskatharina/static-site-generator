@@ -4,7 +4,7 @@ import shutil
 import sys
 
 def main():
-    public_path = "public"
+    public_path = "docs"
     static_path = "static"
     if(len(sys.argv) >= 2):
         basepath = sys.argv[1]
