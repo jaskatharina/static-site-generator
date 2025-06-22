@@ -1,17 +1,18 @@
 from textnode import *
 import os
 import shutil
+import sys
 
 def main():
-    dm1 = TextNode("hello we are your bank", TextType.BOLD)
-    dm2 = TextNode("fuck it up ayyyyy", TextType.LINK, "https://www.boot.dev")
     public_path = "public"
     static_path = "static"
+    if(len(sys.argv) >= 2):
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
+    
     copy_directory_contents(public_path, static_path)
-    generate_pages_recursive("content", "template.html", "public")   
-
-    print(dm1)
-    print(dm2)
+    generate_pages_recursive("content", "template.html", "docs", basepath)  
 
 def copy_directory_contents(public_path, static_path):
     print(f"public path: {public_path} \nstatic_path: {static_path}")
@@ -43,7 +44,7 @@ def extract_title(markdown):
     #if function reaches this point, no header was found
     raise Exception("Title not found :(")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     #open markdown file and read it
     markdown_file = open(f"{from_path}", "r")
@@ -58,14 +59,16 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(markdown)
     #insert title and html-formatted content into template string
     template = template.replace("{{ Title }}", title)
-    html_page = template.replace("{{ Content }}", html_string)
+    template = template.replace("{{ Content }}", html_string)
+    template = template.replace("href=\"/", "href=\"{basepath}")
+    html_page  = template.replace("src=\"/", "src=\"{basepath}")
     #open destination file and write html page to it
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)       
     destination_file = open(f"{dest_path}", "w")
     destination_file.write(html_page)
     print(f"writing html page to {dest_path}")
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     #list entries in current directory
     dir_list = os.listdir(dir_path_content)
     for item in dir_list:
@@ -77,10 +80,10 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             if(item.endswith(".md")):
                 #change destination file type to html
                 item_dest_path = item_dest_path.replace(".md", ".html")
-                generate_page(item_from_path, template_path, item_dest_path)
+                generate_page(item_from_path, template_path, item_dest_path, basepath)
         #if path leads to directory, recurse into directory
         elif(os.path.isdir(item_from_path)):
-            generate_pages_recursive(item_from_path, template_path, item_dest_path)
+            generate_pages_recursive(item_from_path, template_path, item_dest_path, basepath)
         #otherwise, do nothing
 
 main()
